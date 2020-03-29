@@ -38,7 +38,7 @@ spec:
         spec:
           description: Microk8sConfigSpec defines the desired state of Microk8sConfig
           properties:
-            foo:
+            token:
               description: Foo is an example field of Microk8sConfig. Edit Microk8sConfig_types.go
                 to remove/update
               type: string

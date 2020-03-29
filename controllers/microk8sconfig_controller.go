@@ -18,7 +18,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -90,16 +89,16 @@ func (r *Microk8sConfigReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, r
 	}
 
 	if configOwner.IsControlPlaneMachine() {
-		return r.setupControlPlaneBootstrapData(ctx, microk8sconfig)
+		_, err := r.setupControlPlaneBootstrapData(ctx, microk8sconfig)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, patchHelper.Patch(ctx, microk8sconfig)
 	} else {
 		// Worker node
 		log.Info("Worker node not supported yet.")
 		return ctrl.Result{}, nil
 	}
-
-	log.Info(fmt.Sprintf("Config data BootstrapData: %+v ", microk8sconfig))
-
-	return ctrl.Result{}, patchHelper.Patch(ctx, microk8sconfig)
 }
 
 func (r *Microk8sConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
