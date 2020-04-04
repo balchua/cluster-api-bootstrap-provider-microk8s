@@ -1,38 +1,39 @@
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
 kind: Microk8sConfig
 metadata:
-  name: capdo-quickstart-controlplane-0
+  name: capdo-microk8s-controlplane-0
 spec:
   # Add fields here
   token: abc.123488779
+  channel: 1.17/stable
 ---
 
 apiVersion: cluster.x-k8s.io/v1alpha2
 kind: Machine
 metadata:
   labels:
-    cluster.x-k8s.io/cluster-name: capdo-quickstart
+    cluster.x-k8s.io/cluster-name: capdo-microk8s
     cluster.x-k8s.io/control-plane: "true"
-  name: capdo-quickstart-controlplane-0
+  name: capdo-microk8s-controlplane-0
   namespace: default
 spec:
   bootstrap:
     configRef:
       apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
       kind: Microk8sConfig
-      name: capdo-quickstart-controlplane-0
+      name: capdo-microk8s-controlplane-0
       namespace: default
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
     kind: DOMachine
-    name: capdo-quickstart-controlplane-0
+    name: capdo-microk8s-controlplane-0
     namespace: default
   version: v1.16.2
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DOMachine
 metadata:
-  name: capdo-quickstart-controlplane-0
+  name: capdo-microk8s-controlplane-0
   namespace: default
 spec:
   image: 61310770

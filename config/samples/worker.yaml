@@ -1,48 +1,52 @@
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
-kind: Microk8sConfig
+kind: Microk8sConfigTemplate
 metadata:
-  name: capdo-quickstart-worker-0
+  name: capdo-microk8s-worker-0
 spec:
-  # Add fields here
-  token: abc.123488779
+  template:
+    spec:
+      # Add fields here
+      token: abc.123488779
+      channel: 1.17/stable
+      controlPlaneHost: 128.199.128.28
 ---
 apiVersion: cluster.x-k8s.io/v1alpha2
 kind: MachineDeployment
 metadata:
   labels:
-    cluster.x-k8s.io/cluster-name: capdo-quickstart
+    cluster.x-k8s.io/cluster-name: capdo-microk8s
     nodepool: nodepool-0
-  name: capdo-quickstart-md-0
+  name: capdo-microk8s-md-0
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      cluster.x-k8s.io/cluster-name: capdo-quickstart
+      cluster.x-k8s.io/cluster-name: capdo-microk8s
       nodepool: nodepool-0
   template:
     metadata:
       labels:
-        cluster.x-k8s.io/cluster-name: capdo-quickstart
+        cluster.x-k8s.io/cluster-name: capdo-microk8s
         nodepool: nodepool-0
     spec:
       bootstrap:
         configRef:
-          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
-          kind: KubeadmConfigTemplate
-          name: capdo-quickstart-md-0
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+          kind: Microk8sConfigTemplate
+          name: capdo-microk8s-worker-0
           namespace: default
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
         kind: DOMachineTemplate
-        name: capdo-quickstart-md-0
+        name: capdo-microk8s-md-0
         namespace: default
       version: v1.16.2
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
 kind: DOMachineTemplate
 metadata:
-  name: capdo-quickstart-md-0
+  name: capdo-microk8s-md-0
   namespace: default
 spec:
   template:

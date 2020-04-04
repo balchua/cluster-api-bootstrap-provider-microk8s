@@ -17,9 +17,13 @@ limitations under the License.
 package controllers
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"text/template"
 
 	"github.com/go-logr/logr"
+	"github.com/prometheus/common/log"
 	"k8s.io/apimachinery/pkg/runtime"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	bsutil "sigs.k8s.io/cluster-api/bootstrap/util"
@@ -96,8 +100,11 @@ func (r *Microk8sConfigReconciler) Reconcile(req ctrl.Request) (_ ctrl.Result, r
 		return ctrl.Result{}, patchHelper.Patch(ctx, microk8sconfig)
 	} else {
 		// Worker node
-		log.Info("Worker node not supported yet.")
-		return ctrl.Result{}, nil
+		_, err := r.setupWorkerBootstrapData(ctx, microk8sconfig)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, patchHelper.Patch(ctx, microk8sconfig)
 	}
 }
 
@@ -112,10 +119,40 @@ func (r *Microk8sConfigReconciler) setupControlPlaneBootstrapData(ctx context.Co
 	switch {
 	// Migrate plaintext data to secret.
 	case microk8sconfig.Status.BootstrapData == nil:
-		microk8sconfig.Status.BootstrapData = []byte(controllerInit)
+		microk8sconfig.Status.BootstrapData = []byte(r.renderTemplate(microk8sconfig, ControlPlaneInitTemplate))
 		microk8sconfig.Status.Ready = true
 		return ctrl.Result{}, nil
 	}
 
 	return ctrl.Result{}, nil
+}
+
+// This method is only used to setup the control plane.
+func (r *Microk8sConfigReconciler) setupWorkerBootstrapData(ctx context.Context, microk8sconfig *bootstrapv1alpha1.Microk8sConfig) (ctrl.Result, error) {
+	switch {
+	// Migrate plaintext data to secret.
+	case microk8sconfig.Status.BootstrapData == nil:
+		microk8sconfig.Status.BootstrapData = []byte(r.renderTemplate(microk8sconfig, WorkerInitTemplate))
+		microk8sconfig.Status.Ready = true
+		return ctrl.Result{}, nil
+	}
+
+	return ctrl.Result{}, nil
+}
+
+func (r *Microk8sConfigReconciler) renderTemplate(microk8sconfig *bootstrapv1alpha1.Microk8sConfig, cloudInitUserDataTemplate string) []byte {
+
+	tmpl := cloudInitUserDataTemplate
+
+	log.Info(fmt.Sprintf("Templated user-data %s.", tmpl))
+	userData := &UserData{
+		Channel:          microk8sconfig.Spec.Channel,
+		Token:            microk8sconfig.Spec.Tokens,
+		ControlPlaneHost: microk8sconfig.Spec.ControlplaneHost,
+	}
+	t, _ := template.New("test").Parse(tmpl)
+	var tpl bytes.Buffer
+	t.Execute(&tpl, userData)
+	log.Info(fmt.Sprintf("Templated userData %s", tpl.String()))
+	return tpl.Bytes()
 }

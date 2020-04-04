@@ -4,4 +4,7 @@ resources:
 - group: bootstrap
   kind: Microk8sConfig
   version: v1alpha1
+- group: bootstrap
+  kind: Microk8sConfigTemplate
+  version: v1alpha1
 version: "2"

@@ -30,6 +30,10 @@ type Microk8sConfigSpec struct {
 
 	// Foo is an example field of Microk8sConfig. Edit Microk8sConfig_types.go to remove/update
 	Tokens string `json:"token,omitempty"`
+
+	Channel string `json:"channel,omitempty"`
+
+	ControlplaneHost string `json:"controlPlaneHost,omitempty"`
 }
 
 // Microk8sConfigStatus defines the observed state of Microk8sConfig
@@ -78,6 +82,11 @@ type Microk8sConfigList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Microk8sConfig `json:"items"`
+}
+
+// Microk8sConfigTemplateResource defines the Template structure
+type Microk8sConfigTemplateResource struct {
+	Spec Microk8sConfigSpec `json:"spec,omitempty"`
 }
 
 func init() {

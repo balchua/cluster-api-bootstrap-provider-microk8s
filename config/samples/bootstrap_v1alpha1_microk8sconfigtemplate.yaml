@@ -1,0 +1,7 @@
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+kind: Microk8sConfigTemplate
+metadata:
+  name: microk8sconfigtemplate-sample
+spec:
+  # Add fields here
+  foo: bar
